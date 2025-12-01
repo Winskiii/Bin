@@ -208,8 +208,35 @@
             inorganic: { model: './assets/models/trash-anorganik.glb', scale: '0.5 0.5 0.5' }
         };
 
+        const scene = document.querySelector('a-scene');
+        
+        scene.addEventListener('loaded', () => {
+            console.log('Scene loaded, setting up bin handlers...');
+            setupBinHandlers();
+        });
+
+        function setupBinHandlers() {
+            const bins = ['paper', 'organic', 'inorganic'];
+            bins.forEach(binType => {
+                const binEl = document.querySelector(`#bin-${binType}`);
+                if (binEl) {
+                    binEl.addEventListener('click', () => handleBinClick(binType));
+                    binEl.addEventListener('touchstart', (e) => {
+                        e.preventDefault();
+                        handleBinClick(binType);
+                    });
+                    console.log(`Handlers attached to bin-${binType}`);
+                }
+            });
+        }
+
         function spawnTrash(type) {
-            trashHolder.innerHTML = '';
+            console.log('spawnTrash called with type:', type);
+            
+            while (trashHolder.firstChild) {
+                trashHolder.removeChild(trashHolder.firstChild);
+            }
+            
             currentTrashType = type;
             
             const config = trashConfig[type];
@@ -221,14 +248,19 @@
             
             trashHolder.appendChild(el);
             instructionEl.innerText = "Now tap the matching bin!";
-            console.log('Trash spawned:', type);
+            console.log('Trash element created and appended:', type);
+            
+            setTimeout(() => {
+                console.log('Trash holder children:', trashHolder.children.length);
+            }, 100);
         }
 
         function handleBinClick(binType) {
-            console.log('Bin clicked:', binType);
+            console.log('Bin clicked:', binType, 'Current trash:', currentTrashType);
             
             if (!currentTrashType) {
-                alert("Please select a trash type first!");
+                console.log('No trash selected');
+                showFeedback('⚠️ SELECT TRASH!', 'wrong');
                 return;
             }
             
@@ -237,9 +269,16 @@
 
         function throwTrashToBin(targetBinId) {
             const trashEl = trashHolder.firstElementChild;
-            if (!trashEl) return;
+            if (!trashEl) {
+                console.log('No trash element found in holder');
+                return;
+            }
 
-            trashHolder.innerHTML = '';
+            console.log('Throwing trash to bin:', targetBinId);
+            
+            while (trashHolder.firstChild) {
+                trashHolder.removeChild(trashHolder.firstChild);
+            }
 
             const projectile = document.createElement('a-entity');
             projectile.setAttribute('gltf-model', trashConfig[currentTrashType].model);
@@ -255,11 +294,16 @@
             projectile.setAttribute('position', `${startPos.x} ${startPos.y} ${startPos.z}`);
             
             const targetBin = document.querySelector(`#bin-${targetBinId}`);
+            if (!targetBin) {
+                console.error('Target bin not found:', targetBinId);
+                return;
+            }
+            
             const targetPos = new THREE.Vector3();
             targetBin.object3D.getWorldPosition(targetPos);
             targetPos.y += 0.5;
 
-            document.querySelector('a-scene').appendChild(projectile);
+            scene.appendChild(projectile);
 
             projectile.setAttribute('animation', `property: position; to: ${targetPos.x} ${targetPos.y} ${targetPos.z}; dur: 800; easing: easeInQuad`);
             projectile.setAttribute('animation__rot', `property: rotation; to: 720 360 0; dur: 800; easing: linear`);
@@ -309,6 +353,7 @@
 
         console.log('AR Trash Sorting Game loaded!');
         console.log('Point camera at targets.png marker to begin');
+        console.log('Trash models configured:', Object.keys(trashConfig));
     </script>
 </body>
 </html>
