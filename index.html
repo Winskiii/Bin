@@ -4,26 +4,13 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AR Trash Sorting Game</title>
-    <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
+    <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.2/dist/mindar-image-aframe.prod.js"></script>
     <style>
         body {
             margin: 0;
             overflow: hidden;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-
-        #score-display {
-            position: fixed;
-            top: 20px;
-            left: 20px;
-            background: rgba(0, 0, 0, 0.8);
-            color: white;
-            padding: 15px 25px;
-            border-radius: 12px;
-            font-size: 24px;
-            font-weight: bold;
-            z-index: 1000;
         }
 
         .ui-container {
@@ -34,37 +21,68 @@
             display: flex;
             justify-content: center;
             gap: 15px;
-            z-index: 1000;
+            z-index: 10;
+            pointer-events: none;
         }
 
         .btn {
-            padding: 15px 30px;
+            pointer-events: auto;
+            padding: 12px 24px;
             border: none;
             border-radius: 50px;
             font-weight: bold;
             color: white;
             cursor: pointer;
-            font-size: 16px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
-            transition: transform 0.1s;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            transition: transform 0.1s, filter 0.1s;
+            font-size: 1rem;
         }
 
-        .btn:active {
-            transform: scale(0.95);
+        .btn:active { 
+            transform: scale(0.95); 
         }
 
-        .btn-paper {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        .btn-paper { 
+            background-color: #3b82f6; 
         }
 
-        .btn-organic {
-            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        .btn-organic { 
+            background-color: #22c55e; 
         }
 
-        .btn-inorganic {
-            background: linear-gradient(135deg, #ee0979 0%, #ff6a00 100%);
+        .btn-inorganic { 
+            background-color: #ef4444; 
+        }
+        
+        .score-board {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 15px 25px;
+            border-radius: 12px;
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            z-index: 20;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
 
+        .score-label { 
+            font-size: 14px; 
+            color: #666; 
+            text-transform: uppercase; 
+            letter-spacing: 1px; 
+        }
+
+        .score-value { 
+            font-size: 36px; 
+            color: #2563eb; 
+        }
+        
         .feedback {
             position: fixed;
             top: 50%;
@@ -72,107 +90,103 @@
             transform: translate(-50%, -50%);
             font-size: 48px;
             font-weight: 900;
-            text-shadow: 0 4px 10px rgba(0,0,0,0.8);
-            z-index: 2000;
-            opacity: 0;
+            text-shadow: 0 4px 10px rgba(0,0,0,0.5);
             pointer-events: none;
+            z-index: 30;
+            opacity: 0;
             transition: opacity 0.3s;
         }
 
-        .feedback.show {
-            opacity: 1;
-            animation: popIn 0.5s ease-out;
+        .feedback.correct { 
+            color: #22c55e; 
         }
 
-        .feedback.correct {
-            color: #38ef7d;
+        .feedback.wrong { 
+            color: #ef4444; 
         }
 
-        .feedback.wrong {
-            color: #ff6a00;
+        .feedback.show { 
+            opacity: 1; 
+            animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
         }
 
         @keyframes popIn {
-            0% {
-                transform: translate(-50%, -50%) scale(0.5);
+            0% { 
+                transform: translate(-50%, -50%) scale(0.5); 
             }
-            50% {
-                transform: translate(-50%, -50%) scale(1.2);
-            }
-            100% {
-                transform: translate(-50%, -50%) scale(1);
+            100% { 
+                transform: translate(-50%, -50%) scale(1); 
             }
         }
 
         .instruction {
             position: fixed;
-            top: 80px;
+            top: 100px;
             width: 100%;
             text-align: center;
             color: white;
             font-size: 18px;
-            text-shadow: 0 2px 8px rgba(0,0,0,0.8);
-            z-index: 1000;
-            padding: 10px;
-            background: rgba(0,0,0,0.5);
+            text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+            pointer-events: none;
+            z-index: 15;
         }
     </style>
 </head>
 <body>
-    <div id="score-display">Score: 0</div>
+    <div class="score-board">
+        <span class="score-label">Score</span>
+        <span id="score" class="score-value">0</span>
+    </div>
     
     <div class="instruction" id="instruction">
-        Point camera at marker, then select trash type!
+        Choose trash type, then tap the correct bin!
     </div>
 
     <div id="feedback" class="feedback"></div>
 
     <div class="ui-container">
-        <button class="btn btn-paper" onclick="spawnTrash('paper')">📄 Paper</button>
-        <button class="btn btn-organic" onclick="spawnTrash('organic')">🥬 Organic</button>
-        <button class="btn btn-inorganic" onclick="spawnTrash('inorganic')">🥤 Inorganic</button>
+        <button class="btn btn-paper" onclick="spawnTrash('paper')">Paper Waste</button>
+        <button class="btn btn-organic" onclick="spawnTrash('organic')">Organic Waste</button>
+        <button class="btn btn-inorganic" onclick="spawnTrash('inorganic')">Inorganic Waste</button>
     </div>
 
-    <a-scene
+    <a-scene 
         mindar-image="imageTargetSrc: ./assets/targets.mind; autoStart: true; uiLoading: yes; uiScanning: yes;"
-        color-space="sRGB"
-        renderer="colorManagement: true; physicallyCorrectLights: true;"
-        vr-mode-ui="enabled: false"
-        device-orientation-permission-ui="enabled: false">
+        embedded 
+        cursor="rayOrigin: mouse" 
+        raycaster="objects: .collidable"
+        vr-mode-ui="enabled: false">
         
-        <a-assets>
-            <a-asset-item id="bin-paper" src="./assets/models/bin-kertas.glb"></a-asset-item>
-            <a-asset-item id="bin-organic" src="./assets/models/bin-organik.glb"></a-asset-item>
-            <a-asset-item id="bin-inorganic" src="./assets/models/bin-anorganik.glb"></a-asset-item>
-            <a-asset-item id="trash-paper" src="./assets/models/trash-kertas.glb"></a-asset-item>
-            <a-asset-item id="trash-organic" src="./assets/models/trash-organik.glb"></a-asset-item>
-            <a-asset-item id="trash-inorganic" src="./assets/models/trash-anorganik.glb"></a-asset-item>
-        </a-assets>
+        <a-entity mindar-image-target="targetIndex: 0" id="marker">
+            <a-entity id="bins">
+                <a-entity id="bin-paper"
+                    position="-0.9 0 0"
+                    scale="0.75 0.75 0.75"
+                    gltf-model="./assets/models/bin-kertas.glb"
+                    class="collidable"
+                    onclick="handleBinClick('paper')">
+                </a-entity>
+                
+                <a-entity id="bin-organic"
+                    position="0 0 0"
+                    scale="0.75 0.75 0.75"
+                    gltf-model="./assets/models/bin-organik.glb"
+                    class="collidable"
+                    onclick="handleBinClick('organic')">
+                </a-entity>
 
-        <a-camera position="0 0 0" look-controls="enabled: false" cursor="rayOrigin: mouse" raycaster="objects: .clickable">
-            <a-entity id="trash-holder" position="0 -0.4 -1.2"></a-entity>
-        </a-camera>
-
-        <a-entity light="type: ambient; intensity: 1;"></a-entity>
-        <a-entity light="type: directional; intensity: 0.5; castShadow: true;" position="1 1 1"></a-entity>
-
-        <a-entity mindar-image-target="targetIndex: 0">
-            <a-plane position="0 0 0" width="2" height="1.5" rotation="-90 0 0" color="#333" opacity="0.4"></a-plane>
-            
-            <a-entity position="-0.6 0 0" class="bin-container" data-bin-type="paper">
-                <a-gltf-model src="#bin-paper" position="0 0 0" scale="0.45 0.45 0.45" class="clickable bin-model"></a-gltf-model>
-                <a-text value="PAPER" color="#667eea" align="center" width="1" position="0 0.35 0"></a-text>
+                <a-entity id="bin-inorganic"
+                    position="0.9 0 0"
+                    scale="0.75 0.75 0.75"
+                    gltf-model="./assets/models/bin-anorganik.glb"
+                    class="collidable"
+                    onclick="handleBinClick('inorganic')">
+                </a-entity>
             </a-entity>
+        </a-entity>
 
-            <a-entity position="0 0 0" class="bin-container" data-bin-type="organic">
-                <a-gltf-model src="#bin-organic" position="0 0 0" scale="0.45 0.45 0.45" class="clickable bin-model"></a-gltf-model>
-                <a-text value="ORGANIC" color="#38ef7d" align="center" width="1" position="0 0.35 0"></a-text>
-            </a-entity>
-
-            <a-entity position="0.6 0 0" class="bin-container" data-bin-type="inorganic">
-                <a-gltf-model src="#bin-inorganic" position="0 0 0" scale="0.45 0.45 0.45" class="clickable bin-model"></a-gltf-model>
-                <a-text value="INORGANIC" color="#ff6a00" align="center" width="1" position="0 0.35 0"></a-text>
-            </a-entity>
+        <a-entity camera>
+            <a-entity id="trash-holder" position="0 -0.5 -1"></a-entity>
         </a-entity>
     </a-scene>
 
@@ -180,172 +194,109 @@
         let currentScore = 0;
         let currentTrashType = null;
 
-        const scoreEl = document.getElementById('score-display');
+        const scoreEl = document.getElementById('score');
         const feedbackEl = document.getElementById('feedback');
-        const instructionEl = document.getElementById('instruction');
         const trashHolder = document.getElementById('trash-holder');
+        const instructionEl = document.getElementById('instruction');
 
-        const trashModels = {
-            paper: '#trash-paper',
-            organic: '#trash-organic',
-            inorganic: '#trash-inorganic'
+        const trashConfig = {
+            paper: { model: './assets/models/trash-kertas.glb', scale: '0.5 0.5 0.5' },
+            organic: { model: './assets/models/trash-organik.glb', scale: '0.5 0.5 0.5' },
+            inorganic: { model: './assets/models/trash-anorganik.glb', scale: '0.5 0.5 0.5' }
         };
-
-        const scene = document.querySelector('a-scene');
-
-        scene.addEventListener('loaded', () => {
-            console.log('Scene loaded!');
-            setupBinClickHandlers();
-        });
-
-        function setupBinClickHandlers() {
-            const binContainers = document.querySelectorAll('.bin-container');
-            
-            binContainers.forEach(container => {
-                const binType = container.getAttribute('data-bin-type');
-                const binModel = container.querySelector('.bin-model');
-                
-                if (binModel) {
-                    binModel.addEventListener('click', () => {
-                        handleBinClick(binType);
-                    });
-                    
-                    binModel.addEventListener('touchstart', (e) => {
-                        e.preventDefault();
-                        handleBinClick(binType);
-                    });
-                }
-                
-                container.addEventListener('click', () => {
-                    handleBinClick(binType);
-                });
-            });
-            
-            console.log('Bin handlers setup complete');
-        }
 
         function spawnTrash(type) {
             trashHolder.innerHTML = '';
             currentTrashType = type;
             
-            const trashEl = document.createElement('a-entity');
-            trashEl.setAttribute('gltf-model', trashModels[type]);
-            trashEl.setAttribute('scale', '0.4 0.4 0.4');
-            trashEl.setAttribute('rotation', '0 0 0');
-            trashEl.setAttribute('animation', {
-                property: 'rotation',
-                to: '0 360 0',
-                loop: true,
-                dur: 3000,
-                easing: 'linear'
-            });
-            trashEl.setAttribute('animation__float', {
-                property: 'position',
-                from: '0 -0.4 -1.2',
-                to: '0 -0.35 -1.2',
-                dir: 'alternate',
-                loop: true,
-                dur: 1000,
-                easing: 'easeInOutSine'
-            });
+            const config = trashConfig[type];
+            const el = document.createElement('a-entity');
+            el.setAttribute('gltf-model', config.model);
+            el.setAttribute('scale', config.scale);
+            el.setAttribute('rotation', '0 45 0');
+            el.setAttribute('animation', 'property: position; dir: alternate; dur: 1000; easing: easeInOutSine; loop: true; to: 0 -0.45 -1');
             
-            trashHolder.appendChild(trashEl);
-            
-            const typeNames = {
-                paper: 'Paper',
-                organic: 'Organic',
-                inorganic: 'Inorganic'
-            };
-            
-            instructionEl.textContent = `${typeNames[type]} selected! Click the correct bin!`;
-            console.log('Spawned trash:', type);
+            trashHolder.appendChild(el);
+            instructionEl.innerText = "Now tap the matching bin!";
         }
 
         function handleBinClick(binType) {
-            console.log('Bin clicked:', binType);
-            
             if (!currentTrashType) {
-                showFeedback('⚠️ Select trash first!', 'wrong');
+                alert("Please select a trash type first!");
                 return;
             }
             
             throwTrashToBin(binType);
         }
 
-        function throwTrashToBin(binType) {
+        function throwTrashToBin(targetBinId) {
             const trashEl = trashHolder.firstElementChild;
             if (!trashEl) return;
 
             trashHolder.innerHTML = '';
 
             const projectile = document.createElement('a-entity');
-            projectile.setAttribute('gltf-model', trashModels[currentTrashType]);
-            projectile.setAttribute('scale', '0.4 0.4 0.4');
+            projectile.setAttribute('gltf-model', trashConfig[currentTrashType].model);
+            projectile.setAttribute('scale', '0.5 0.5 0.5');
             
-            const camera = document.querySelector('a-camera');
-            const cameraPos = camera.getAttribute('position');
+            const camera = document.querySelector('a-entity[camera]').object3D;
+            const startPos = new THREE.Vector3();
+            camera.getWorldPosition(startPos);
+            const dir = new THREE.Vector3(0, 0, -1);
+            dir.applyQuaternion(camera.quaternion);
+            startPos.add(dir);
             
-            projectile.setAttribute('position', `${cameraPos.x} ${cameraPos.y - 0.3} ${cameraPos.z - 1}`);
+            projectile.setAttribute('position', `${startPos.x} ${startPos.y} ${startPos.z}`);
             
-            const targetBin = document.querySelector(`[data-bin-type="${binType}"]`);
-            const binPos = targetBin.getAttribute('position');
-            
-            scene.appendChild(projectile);
+            const targetBin = document.querySelector(`#bin-${targetBinId}`);
+            const targetPos = new THREE.Vector3();
+            targetBin.object3D.getWorldPosition(targetPos);
+            targetPos.y += 0.5;
 
-            projectile.setAttribute('animation', {
-                property: 'position',
-                to: `${binPos.x} ${binPos.y + 0.3} ${binPos.z}`,
-                dur: 600,
-                easing: 'easeInQuad'
-            });
+            document.querySelector('a-scene').appendChild(projectile);
 
-            projectile.setAttribute('animation__spin', {
-                property: 'rotation',
-                to: '360 720 360',
-                dur: 600,
-                easing: 'linear'
-            });
+            projectile.setAttribute('animation', `property: position; to: ${targetPos.x} ${targetPos.y} ${targetPos.z}; dur: 800; easing: easeInQuad`);
+            projectile.setAttribute('animation__rot', `property: rotation; to: 720 360 0; dur: 800; easing: linear`);
 
             setTimeout(() => {
-                if (projectile.parentNode) {
-                    projectile.parentNode.removeChild(projectile);
-                }
+                if (projectile.parentNode) projectile.parentNode.removeChild(projectile);
                 
-                checkMatch(binType);
-            }, 650);
+                if (currentTrashType === targetBinId) {
+                    handleSuccess();
+                } else {
+                    handleFail();
+                }
+                currentTrashType = null;
+                instructionEl.innerText = "Choose another trash type!";
+            }, 800);
         }
 
-        function checkMatch(binType) {
-            if (currentTrashType === binType) {
-                currentScore += 10;
-                updateScore();
-                showFeedback('✓ CORRECT! +10', 'correct');
-                instructionEl.textContent = 'Great job! Select another trash type!';
-            } else {
-                currentScore -= 5;
-                updateScore();
-                showFeedback('✗ WRONG! -5', 'wrong');
-                instructionEl.textContent = 'Try again! Select trash type!';
-            }
-            
-            currentTrashType = null;
+        function handleSuccess() {
+            currentScore += 10;
+            updateScore();
+            showFeedback('CORRECT! +10', 'correct');
+        }
+
+        function handleFail() {
+            currentScore -= 5;
+            updateScore();
+            showFeedback('WRONG! -5', 'wrong');
         }
 
         function updateScore() {
-            scoreEl.textContent = `Score: ${currentScore}`;
-            scoreEl.style.transform = 'scale(1.2)';
+            scoreEl.innerText = currentScore;
+            scoreEl.style.transform = 'scale(1.5)';
             setTimeout(() => {
                 scoreEl.style.transform = 'scale(1)';
             }, 200);
         }
 
         function showFeedback(text, type) {
-            feedbackEl.textContent = text;
+            feedbackEl.innerText = text;
             feedbackEl.className = `feedback show ${type}`;
-            
             setTimeout(() => {
                 feedbackEl.className = 'feedback';
-            }, 2000);
+            }, 1500);
         }
     </script>
 </body>
