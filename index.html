@@ -108,18 +108,20 @@
     <div id="feedback" class="feedback"></div>
 
     <div class="ui-container">
-      <button class="btn btn-paper" onclick="spawnTrash('paper')">Paper Waste</button>
+      <button class="btn btn-paper" onclick="spawnTrash('paper')">Hazardous Waste</button>
       <button class="btn btn-organic" onclick="spawnTrash('organic')">Organic Waste</button>
       <button class="btn btn-inorganic" onclick="spawnTrash('inorganic')">Inorganic Waste</button>
     </div>
 
     <a-scene
-      mindar-image="imageTargetSrc: ./assets/targets.mind; autoStart: true; uiLoading: yes; uiScanning: yes;"
+      mindar-image="imageTargetSrc: ./assets/targets.mind; autoStart: true; uiLoading: no; uiScanning: no;"
       embedded
       vr-mode-ui="enabled: false"
       device-orientation-permission-ui="enabled: false"
       cursor="rayOrigin: mouse"
-      raycaster="objects: .collidable">
+      raycaster="objects: .collidable"
+      renderer="colorManagement: true; physicallyCorrectLights: true;"
+      color-space="sRGB">
       
       <a-assets>
         <a-asset-item id="bin-paper-model" src="./assets/models/bin-kertas.glb"></a-asset-item>
@@ -130,7 +132,7 @@
         <a-asset-item id="trash-inorganic-model" src="./assets/models/trash-anorganik.glb"></a-asset-item>
       </a-assets>
 
-      <a-camera position="0 0 0" look-controls="enabled: false">
+      <a-camera position="0 0 0" look-controls="enabled: false" cursor="rayOrigin: mouse" raycaster="objects: .collidable">
         <a-entity id="trash-holder" position="0 -0.5 -1"></a-entity>
       </a-camera>
 
@@ -145,24 +147,30 @@
           scale="0.75 0.75 0.75"
           gltf-model="#bin-paper-model"
           class="collidable"
-          onclick="handleBinClick('paper')"
-        ></a-entity>
+          data-clickable
+        >
+          <a-text value="PAPER" color="white" align="center" width="0.8" position="0 0.3 0"></a-text>
+        </a-entity>
         
         <a-entity id="bin-organic"
           position="0 0 0"
           scale="0.75 0.75 0.75"
           gltf-model="#bin-organic-model"
           class="collidable"
-          onclick="handleBinClick('organic')"
-        ></a-entity>
+          data-clickable
+        >
+          <a-text value="ORGANIC" color="white" align="center" width="0.8" position="0 0.3 0"></a-text>
+        </a-entity>
 
         <a-entity id="bin-inorganic"
           position="0.9 0 0"
           scale="0.75 0.75 0.75"
           gltf-model="#bin-inorganic-model"
           class="collidable"
-          onclick="handleBinClick('inorganic')"
-        ></a-entity>
+          data-clickable
+        >
+          <a-text value="INORGANIC" color="white" align="center" width="0.8" position="0 0.3 0"></a-text>
+        </a-entity>
       </a-entity>
     </a-scene>
 
@@ -274,6 +282,19 @@
           feedbackEl.className = 'feedback';
         }, 1500);
       }
+
+      document.addEventListener('DOMContentLoaded', () => {
+        const scene = document.querySelector('a-scene');
+        scene.addEventListener('loaded', () => {
+          const bins = document.querySelectorAll('[data-clickable]');
+          bins.forEach(bin => {
+            bin.addEventListener('click', () => {
+              const binId = bin.id.replace('bin-', '');
+              handleBinClick(binId);
+            });
+          });
+        });
+      });
     </script>
   </body>
 </html>
