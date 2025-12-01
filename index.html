@@ -145,7 +145,7 @@
     <div id="feedback" class="feedback"></div>
 
     <div class="ui-container">
-        <button class="btn btn-paper" onclick="spawnTrash('paper')">Paper Waste</button>
+        <button class="btn btn-paper" onclick="spawnTrash('paper')">Hazardous Waste</button>
         <button class="btn btn-organic" onclick="spawnTrash('organic')">Organic Waste</button>
         <button class="btn btn-inorganic" onclick="spawnTrash('inorganic')">Inorganic Waste</button>
     </div>
@@ -208,35 +208,8 @@
             inorganic: { model: './assets/models/trash-anorganik.glb', scale: '0.5 0.5 0.5' }
         };
 
-        const scene = document.querySelector('a-scene');
-        
-        scene.addEventListener('loaded', () => {
-            console.log('Scene loaded, setting up bin handlers...');
-            setupBinHandlers();
-        });
-
-        function setupBinHandlers() {
-            const bins = ['paper', 'organic', 'inorganic'];
-            bins.forEach(binType => {
-                const binEl = document.querySelector(`#bin-${binType}`);
-                if (binEl) {
-                    binEl.addEventListener('click', () => handleBinClick(binType));
-                    binEl.addEventListener('touchstart', (e) => {
-                        e.preventDefault();
-                        handleBinClick(binType);
-                    });
-                    console.log(`Handlers attached to bin-${binType}`);
-                }
-            });
-        }
-
         function spawnTrash(type) {
-            console.log('spawnTrash called with type:', type);
-            
-            while (trashHolder.firstChild) {
-                trashHolder.removeChild(trashHolder.firstChild);
-            }
-            
+            trashHolder.innerHTML = '';
             currentTrashType = type;
             
             const config = trashConfig[type];
@@ -248,19 +221,11 @@
             
             trashHolder.appendChild(el);
             instructionEl.innerText = "Now tap the matching bin!";
-            console.log('Trash element created and appended:', type);
-            
-            setTimeout(() => {
-                console.log('Trash holder children:', trashHolder.children.length);
-            }, 100);
         }
 
         function handleBinClick(binType) {
-            console.log('Bin clicked:', binType, 'Current trash:', currentTrashType);
-            
             if (!currentTrashType) {
-                console.log('No trash selected');
-                showFeedback('⚠️ SELECT TRASH!', 'wrong');
+                alert("Please select trash first!");
                 return;
             }
             
@@ -269,16 +234,9 @@
 
         function throwTrashToBin(targetBinId) {
             const trashEl = trashHolder.firstElementChild;
-            if (!trashEl) {
-                console.log('No trash element found in holder');
-                return;
-            }
+            if (!trashEl) return;
 
-            console.log('Throwing trash to bin:', targetBinId);
-            
-            while (trashHolder.firstChild) {
-                trashHolder.removeChild(trashHolder.firstChild);
-            }
+            trashHolder.innerHTML = '';
 
             const projectile = document.createElement('a-entity');
             projectile.setAttribute('gltf-model', trashConfig[currentTrashType].model);
@@ -294,24 +252,17 @@
             projectile.setAttribute('position', `${startPos.x} ${startPos.y} ${startPos.z}`);
             
             const targetBin = document.querySelector(`#bin-${targetBinId}`);
-            if (!targetBin) {
-                console.error('Target bin not found:', targetBinId);
-                return;
-            }
-            
             const targetPos = new THREE.Vector3();
             targetBin.object3D.getWorldPosition(targetPos);
             targetPos.y += 0.5;
 
-            scene.appendChild(projectile);
+            document.querySelector('a-scene').appendChild(projectile);
 
             projectile.setAttribute('animation', `property: position; to: ${targetPos.x} ${targetPos.y} ${targetPos.z}; dur: 800; easing: easeInQuad`);
             projectile.setAttribute('animation__rot', `property: rotation; to: 720 360 0; dur: 800; easing: linear`);
 
             setTimeout(() => {
-                if (projectile.parentNode) {
-                    projectile.parentNode.removeChild(projectile);
-                }
+                if (projectile.parentNode) projectile.parentNode.removeChild(projectile);
                 
                 if (currentTrashType === targetBinId) {
                     handleSuccess();
@@ -350,10 +301,6 @@
                 feedbackEl.className = 'feedback';
             }, 1500);
         }
-
-        console.log('AR Trash Sorting Game loaded!');
-        console.log('Point camera at targets.png marker to begin');
-        console.log('Trash models configured:', Object.keys(trashConfig));
     </script>
 </body>
 </html>
