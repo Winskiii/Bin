@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Cetak Marker Hiro</title>
+    <style>
+      html, body { height: 100%; margin: 0; }
+      .wrap { display:flex; flex-direction:column; align-items:center; gap:12px; padding:16px; }
+      .card { background:#fff; box-shadow:0 4px 16px rgba(0,0,0,.15); border-radius:12px; padding:16px; }
+      .actions { display:flex; gap:8px; }
+      .btn { appearance:none; border:0; border-radius:8px; padding:10px 14px; font-weight:600; cursor:pointer; }
+      .btn-primary { background:#2563eb; color:#fff; }
+      .btn-secondary { background:#f3f4f6; color:#111; }
+      .sheet { width: min(100%, 900px); }
+      .marker { width: 100%; max-width: 800px; }
+      @media print {
+        .no-print { display:none; }
+        .sheet { width: 210mm; margin: 0 auto; }
+        .marker { width: 150mm; height: auto; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="card no-print">
+        <div><strong>Marker Hiro</strong> — gunakan untuk AR.js preset "hiro". Cetak pada kertas putih, hindari pantulan.</div>
+        <div class="actions" style="margin-top:8px;">
+          <button class="btn btn-primary" onclick="window.print()">Cetak</button>
+          <a class="btn btn-secondary" href="index.html">Kembali ke AR</a>
+        </div>
+      </div>
+      <div class="sheet">
+        <img class="marker" alt="Hiro marker"
+             src="https://commons.wikimedia.org/wiki/Special:FilePath/Hiro_marker_ARjs.png"/>
+      </div>
+    </div>
+  </body>
+</html>
