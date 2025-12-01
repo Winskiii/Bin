@@ -1,16 +1,45 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="utf-8">
+    <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AR Trash Sorting Game</title>
-    <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
+    <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.2/dist/mindar-image-aframe.prod.js"></script>
     <style>
         body {
             margin: 0;
             overflow: hidden;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .score-board {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 15px 25px;
+            border-radius: 12px;
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            z-index: 20;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .score-label { 
+            font-size: 14px; 
+            color: #666; 
+            text-transform: uppercase; 
+            letter-spacing: 1px; 
+        }
+
+        .score-value { 
+            font-size: 36px; 
+            color: #2563eb; 
         }
 
         .ui-container {
@@ -53,36 +82,7 @@
         .btn-inorganic { 
             background-color: #ef4444; 
         }
-        
-        .score-board {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: rgba(255, 255, 255, 0.9);
-            padding: 15px 25px;
-            border-radius: 12px;
-            font-size: 24px;
-            font-weight: bold;
-            color: #333;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-            z-index: 20;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
 
-        .score-label { 
-            font-size: 14px; 
-            color: #666; 
-            text-transform: uppercase; 
-            letter-spacing: 1px; 
-        }
-
-        .score-value { 
-            font-size: 36px; 
-            color: #2563eb; 
-        }
-        
         .feedback {
             position: fixed;
             top: 50%;
@@ -110,15 +110,6 @@
             animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
         }
 
-        @keyframes popIn {
-            0% { 
-                transform: translate(-50%, -50%) scale(0.5); 
-            }
-            100% { 
-                transform: translate(-50%, -50%) scale(1); 
-            }
-        }
-
         .instruction {
             position: fixed;
             top: 100px;
@@ -130,6 +121,15 @@
             pointer-events: none;
             z-index: 15;
         }
+
+        @keyframes popIn {
+            0% { 
+                transform: translate(-50%, -50%) scale(0.5); 
+            }
+            100% { 
+                transform: translate(-50%, -50%) scale(1); 
+            }
+        }
     </style>
 </head>
 <body>
@@ -139,7 +139,7 @@
     </div>
     
     <div class="instruction" id="instruction">
-        Choose trash type, then tap the correct bin!
+        Point camera at marker and select trash type!
     </div>
 
     <div id="feedback" class="feedback"></div>
@@ -150,43 +150,46 @@
         <button class="btn btn-inorganic" onclick="spawnTrash('inorganic')">Inorganic Waste</button>
     </div>
 
-    <a-scene 
+    <a-scene
         mindar-image="imageTargetSrc: ./assets/targets.mind; autoStart: true; uiLoading: yes; uiScanning: yes;"
-        embedded 
-        cursor="rayOrigin: mouse" 
-        raycaster="objects: .collidable"
-        vr-mode-ui="enabled: false">
-        
-        <a-entity mindar-image-target="targetIndex: 0" id="marker">
-            <a-entity id="bins">
-                <a-entity id="bin-paper"
-                    position="-0.9 0 0"
-                    scale="0.75 0.75 0.75"
-                    gltf-model="./assets/models/bin-kertas.glb"
-                    class="collidable"
-                    onclick="handleBinClick('paper')">
-                </a-entity>
-                
-                <a-entity id="bin-organic"
-                    position="0 0 0"
-                    scale="0.75 0.75 0.75"
-                    gltf-model="./assets/models/bin-organik.glb"
-                    class="collidable"
-                    onclick="handleBinClick('organic')">
-                </a-entity>
+        color-space="sRGB"
+        renderer="colorManagement: true; physicallyCorrectLights: true;"
+        vr-mode-ui="enabled: false"
+        device-orientation-permission-ui="enabled: false">
 
-                <a-entity id="bin-inorganic"
-                    position="0.9 0 0"
-                    scale="0.75 0.75 0.75"
-                    gltf-model="./assets/models/bin-anorganik.glb"
-                    class="collidable"
-                    onclick="handleBinClick('inorganic')">
-                </a-entity>
-            </a-entity>
-        </a-entity>
+        <a-assets>
+            <a-asset-item id="bin-paper-model" src="./assets/models/bin-kertas.glb"></a-asset-item>
+            <a-asset-item id="bin-organic-model" src="./assets/models/bin-organik.glb"></a-asset-item>
+            <a-asset-item id="bin-inorganic-model" src="./assets/models/bin-anorganik.glb"></a-asset-item>
+            <a-asset-item id="trash-paper-model" src="./assets/models/trash-kertas.glb"></a-asset-item>
+            <a-asset-item id="trash-organic-model" src="./assets/models/trash-organik.glb"></a-asset-item>
+            <a-asset-item id="trash-inorganic-model" src="./assets/models/trash-anorganik.glb"></a-asset-item>
+        </a-assets>
 
-        <a-entity camera>
+        <a-camera position="0 0 0" look-controls="enabled: false" cursor="rayOrigin: mouse" raycaster="objects: .collidable">
             <a-entity id="trash-holder" position="0 -0.5 -1"></a-entity>
+        </a-camera>
+
+        <a-entity light="type: ambient; color: #FFF; intensity: 1"></a-entity>
+        <a-entity light="type: directional; color: #FFF; intensity: 0.6" position="-0.5 1 1"></a-entity>
+
+        <a-entity mindar-image-target="targetIndex: 0">
+            <a-box position="0 -0.3 0" width="2" height="0.1" depth="1.5" color="#333" opacity="0.3"></a-box>
+
+            <a-entity id="bin-paper" position="-0.9 0 0" class="collidable" data-bin-type="paper" onclick="handleBinClick('paper')">
+                <a-gltf-model src="#bin-paper-model" position="0 0 0" scale="0.75 0.75 0.75"></a-gltf-model>
+                <a-text value="PAPER" color="white" align="center" width="0.8" position="0 0.3 0"></a-text>
+            </a-entity>
+
+            <a-entity id="bin-organic" position="0 0 0" class="collidable" data-bin-type="organic" onclick="handleBinClick('organic')">
+                <a-gltf-model src="#bin-organic-model" position="0 0 0" scale="0.75 0.75 0.75"></a-gltf-model>
+                <a-text value="ORGANIC" color="white" align="center" width="0.8" position="0 0.3 0"></a-text>
+            </a-entity>
+
+            <a-entity id="bin-inorganic" position="0.9 0 0" class="collidable" data-bin-type="inorganic" onclick="handleBinClick('inorganic')">
+                <a-gltf-model src="#bin-inorganic-model" position="0 0 0" scale="0.75 0.75 0.75"></a-gltf-model>
+                <a-text value="INORGANIC" color="white" align="center" width="0.8" position="0 0.3 0"></a-text>
+            </a-entity>
         </a-entity>
     </a-scene>
 
@@ -218,9 +221,12 @@
             
             trashHolder.appendChild(el);
             instructionEl.innerText = "Now tap the matching bin!";
+            console.log('Trash spawned:', type);
         }
 
         function handleBinClick(binType) {
+            console.log('Bin clicked:', binType);
+            
             if (!currentTrashType) {
                 alert("Please select a trash type first!");
                 return;
@@ -239,7 +245,7 @@
             projectile.setAttribute('gltf-model', trashConfig[currentTrashType].model);
             projectile.setAttribute('scale', '0.5 0.5 0.5');
             
-            const camera = document.querySelector('a-entity[camera]').object3D;
+            const camera = document.querySelector('a-camera').object3D;
             const startPos = new THREE.Vector3();
             camera.getWorldPosition(startPos);
             const dir = new THREE.Vector3(0, 0, -1);
@@ -259,7 +265,9 @@
             projectile.setAttribute('animation__rot', `property: rotation; to: 720 360 0; dur: 800; easing: linear`);
 
             setTimeout(() => {
-                if (projectile.parentNode) projectile.parentNode.removeChild(projectile);
+                if (projectile.parentNode) {
+                    projectile.parentNode.removeChild(projectile);
+                }
                 
                 if (currentTrashType === targetBinId) {
                     handleSuccess();
@@ -298,6 +306,9 @@
                 feedbackEl.className = 'feedback';
             }, 1500);
         }
+
+        console.log('AR Trash Sorting Game loaded!');
+        console.log('Point camera at targets.png marker to begin');
     </script>
 </body>
 </html>
