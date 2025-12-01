@@ -132,8 +132,6 @@
             class="collidable"
             onclick="handleBinClick('paper')"
           ></a-entity>
-          
-          <!-- Organic Bin (Center) -->
           <a-entity id="bin-organic"
             position="0 0 0"
             scale="0.75 0.75 0.75"
@@ -142,7 +140,6 @@
             onclick="handleBinClick('organic')"
           ></a-entity>
 
-          <!-- Inorganic Bin (Right) -->
           <a-entity id="bin-inorganic"
             position="0.9 0 0"
             scale="0.75 0.75 0.75"
@@ -153,9 +150,7 @@
         </a-entity>
       </a-marker>
 
-      <!-- Camera -->
       <a-entity camera>
-        <!-- Current Trash Holder (Fixed to Camera) -->
         <a-entity id="trash-holder" position="0 -0.5 -1"></a-entity>
       </a-entity>
     </a-scene>
@@ -169,7 +164,6 @@
       const trashHolder = document.getElementById('trash-holder');
       const instructionEl = document.getElementById('instruction');
 
-      // Configuration for trash models
       const trashConfig = {
         paper: { model: './assets/models/trash-kertas.glb', scale: '0.5 0.5 0.5' },
         organic: { model: './assets/models/trash-organik.glb', scale: '0.3 0.3 0.3' },
@@ -202,7 +196,7 @@
         marker.appendChild(trash);
         
         instructionEl.innerText = "Paper trash flying to bin!";
-        showFeedback('PAPER WASTE!', 'correct');
+        showFeedback('HAZARDOUS WASTE!', 'correct');
         
         setTimeout(() => {
           trash.setAttribute('animation', 'property: position; to: -0.9 0.3 0; dur: 1000; easing: easeInQuad');
@@ -272,7 +266,6 @@
         }, 100);
       }
 
-      // Handle click on bins
       function handleBinClick(binType) {
         if (!currentTrashType) {
           showFeedback('⚠️ SELECT TRASH FIRST!', 'wrong');
@@ -286,26 +279,21 @@
         const trashEl = trashHolder.firstElementChild;
         if (!trashEl) return;
 
-        // 1. Hide HUD Trash
         trashHolder.innerHTML = ''; 
 
-        // 2. Create Projectile in World Space
         const projectile = document.createElement('a-entity');
         projectile.setAttribute('gltf-model', trashConfig[currentTrashType].model);
         projectile.setAttribute('scale', '0.5 0.5 0.5');
         
-        // Start position: Camera World Position
         const camera = document.querySelector('a-entity[camera]').object3D;
         const startPos = new THREE.Vector3();
         camera.getWorldPosition(startPos);
-        // Offset slightly forward so it doesn't clip camera
         const dir = new THREE.Vector3(0, 0, -1);
         dir.applyQuaternion(camera.quaternion);
         startPos.add(dir);
         
         projectile.setAttribute('position', `${startPos.x} ${startPos.y} ${startPos.z}`);
         
-        // Target Position: The clicked bin
         const targetBin = document.querySelector(`#bin-${targetBinId}`);
         const targetPos = new THREE.Vector3();
         targetBin.object3D.getWorldPosition(targetPos);
@@ -313,11 +301,9 @@
 
         document.querySelector('a-scene').appendChild(projectile);
 
-        // 3. Animate Throw
         projectile.setAttribute('animation', `property: position; to: ${targetPos.x} ${targetPos.y} ${targetPos.z}; dur: 800; easing: easeInQuad`);
         projectile.setAttribute('animation__rot', `property: rotation; to: 720 360 0; dur: 800; easing: linear`);
 
-        // 4. Check Result
         setTimeout(() => {
           if (projectile.parentNode) projectile.parentNode.removeChild(projectile);
           
@@ -359,10 +345,6 @@
         }, 1500);
       }
 
-      // Ensure raycaster works for clicks
-      // We need to register the click event on the scene if individual clicks fail,
-      // but A-Frame's cursor component usually handles this well with 'click' event on entities.
-      // The entities already have onclick attributes calling our function.
     </script>
   </body>
 </html>
