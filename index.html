@@ -3,8 +3,8 @@
   <head>
     <meta charset="utf-8" />
     <title>AR Trash Sorting Game</title>
-    <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.2/dist/mindar-image-aframe.prod.js"></script>
+    <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
+    <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
     <style>
       body {
         margin: 0;
@@ -113,41 +113,15 @@
       <button class="btn btn-inorganic" onclick="spawnTrash('inorganic')">Inorganic Waste</button>
     </div>
 
-    <a-scene
-      mindar-image="imageTargetSrc: ./assets/targets.mind; autoStart: true; uiLoading: no; uiScanning: no;"
-      embedded
-      vr-mode-ui="enabled: false"
-      device-orientation-permission-ui="enabled: false"
-      cursor="rayOrigin: mouse"
-      raycaster="objects: .collidable"
-      renderer="colorManagement: true; physicallyCorrectLights: true;"
-      color-space="sRGB">
-      
-      <a-assets>
-        <a-asset-item id="bin-paper-model" src="./assets/models/bin-kertas.glb"></a-asset-item>
-        <a-asset-item id="bin-organic-model" src="./assets/models/bin-organik.glb"></a-asset-item>
-        <a-asset-item id="bin-inorganic-model" src="./assets/models/bin-anorganik.glb"></a-asset-item>
-        <a-asset-item id="trash-paper-model" src="./assets/models/trash-kertas.glb"></a-asset-item>
-        <a-asset-item id="trash-organic-model" src="./assets/models/trash-organik.glb"></a-asset-item>
-        <a-asset-item id="trash-inorganic-model" src="./assets/models/trash-anorganik.glb"></a-asset-item>
-      </a-assets>
-
-      <a-camera position="0 0 0" look-controls="enabled: false">
-        <a-entity id="trash-holder" position="0 -0.5 -1"></a-entity>
-      </a-camera>
-
-      <a-entity light="type: ambient; color: #FFF; intensity: 1"></a-entity>
-      <a-entity light="type: directional; color: #FFF; intensity: 0.6" position="-0.5 1 1"></a-entity>
-
-      <a-entity mindar-image-target="targetIndex: 0">
-        <a-box position="0 -0.3 0" width="2" height="0.1" depth="1.5" color="#333" opacity="0.3"></a-box>
+    <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false;" cursor="rayOrigin: mouse" raycaster="objects: .collidable">
+      <a-marker preset="hiro" id="hiro-marker">
         <!-- Bins Container -->
         <a-entity id="bins">
           <!-- Paper Bin (Left) -->
           <a-entity id="bin-paper"
             position="-0.9 0 0"
             scale="0.75 0.75 0.75"
-            gltf-model="#bin-paper-model"
+            gltf-model="./assets/models/bin-kertas.glb"
             class="collidable"
             onclick="handleBinClick('paper')"
           ></a-entity>
@@ -156,7 +130,7 @@
           <a-entity id="bin-organic"
             position="0 0 0"
             scale="0.75 0.75 0.75"
-            gltf-model="#bin-organic-model"
+            gltf-model="./assets/models/bin-organik.glb"
             class="collidable"
             onclick="handleBinClick('organic')"
           ></a-entity>
@@ -165,13 +139,18 @@
           <a-entity id="bin-inorganic"
             position="0.9 0 0"
             scale="0.75 0.75 0.75"
-            gltf-model="#bin-inorganic-model"
+            gltf-model="./assets/models/bin-anorganik.glb"
             class="collidable"
             onclick="handleBinClick('inorganic')"
           ></a-entity>
         </a-entity>
-      </a-entity>
+      </a-marker>
 
+      <!-- Camera -->
+      <a-entity camera>
+        <!-- Current Trash Holder (Fixed to Camera) -->
+        <a-entity id="trash-holder" position="0 -0.5 -1"></a-entity>
+      </a-entity>
     </a-scene>
 
     <script>
@@ -185,9 +164,9 @@
 
       // Configuration for trash models
       const trashConfig = {
-        paper: { model: '#trash-paper-model', scale: '0.5 0.5 0.5' },
-        organic: { model: '#trash-organic-model', scale: '0.5 0.5 0.5' },
-        inorganic: { model: '#trash-inorganic-model', scale: '0.5 0.5 0.5' }
+        paper: { model: './assets/models/trash-kertas.glb', scale: '0.5 0.5 0.5' },
+        organic: { model: './assets/models/trash-organik.glb', scale: '0.5 0.5 0.5' },
+        inorganic: { model: './assets/models/trash-anorganik.glb', scale: '0.5 0.5 0.5' }
       };
 
       // Spawn trash attached to camera
