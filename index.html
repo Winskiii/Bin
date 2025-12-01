@@ -172,79 +172,8 @@
 
       function spawnTrash(type) {
         console.log('Spawning trash:', type);
-        currentTrashType = type;
-        
-        if (type === 'paper') {
-          spawnPaperTrash();
-        } else if (type === 'organic') {
-          spawnOrganicTrash();
-        } else {
-          spawnRegularTrash(type);
-        }
-      }
-
-      function spawnPaperTrash() {
-        const marker = document.querySelector('#hiro-marker');
-        const binPaper = document.querySelector('#bin-paper');
-        
-        const trash = document.createElement('a-entity');
-        trash.setAttribute('gltf-model', './assets/models/trash-kertas.glb');
-        trash.setAttribute('scale', '0.5 0.5 0.5');
-        trash.setAttribute('position', '-0.9 1.5 0');
-        trash.setAttribute('rotation', '0 0 0');
-        
-        marker.appendChild(trash);
-        
-        instructionEl.innerText = "Paper trash flying to bin!";
-        showFeedback('HAZARDOUS WASTE!', 'correct');
-        
-        setTimeout(() => {
-          trash.setAttribute('animation', 'property: position; to: -0.9 0.3 0; dur: 1000; easing: easeInQuad');
-          trash.setAttribute('animation__rot', 'property: rotation; to: 360 720 360; dur: 1000; easing: linear');
-        }, 200);
-        
-        setTimeout(() => {
-          if (trash.parentNode) trash.parentNode.removeChild(trash);
-          currentScore += 10;
-          updateScore();
-          showFeedback('CORRECT! +10', 'correct');
-          currentTrashType = null;
-          instructionEl.innerText = "Choose another trash type!";
-        }, 1400);
-      }
-
-      function spawnOrganicTrash() {
-        const marker = document.querySelector('#hiro-marker');
-        const binOrganic = document.querySelector('#bin-organic');
-        
-        const trash = document.createElement('a-entity');
-        trash.setAttribute('gltf-model', './assets/models/trash-organik.glb');
-        trash.setAttribute('scale', '0.3 0.3 0.3');
-        trash.setAttribute('position', '0 1.5 0');
-        trash.setAttribute('rotation', '0 0 0');
-        
-        marker.appendChild(trash);
-        
-        instructionEl.innerText = "Organic trash flying to bin!";
-        showFeedback('ORGANIC WASTE!', 'correct');
-        
-        setTimeout(() => {
-          trash.setAttribute('animation', 'property: position; to: 0 0.3 0; dur: 1000; easing: easeInQuad');
-          trash.setAttribute('animation__rot', 'property: rotation; to: 720 360 180; dur: 1000; easing: linear');
-        }, 200);
-        
-        setTimeout(() => {
-          if (trash.parentNode) trash.parentNode.removeChild(trash);
-          currentScore += 10;
-          updateScore();
-          showFeedback('CORRECT! +10', 'correct');
-          currentTrashType = null;
-          instructionEl.innerText = "Choose another trash type!";
-        }, 1400);
-      }
-
-      function spawnRegularTrash(type) {
         trashHolder.innerHTML = '';
+        currentTrashType = type;
         
         const config = trashConfig[type];
         if (!config) {
