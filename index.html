@@ -41,7 +41,7 @@
       
       .score-board {
         position: fixed;
-        top: 20px;
+        top: 70px;
         right: 20px;
         background: rgba(255, 255, 255, 0.9);
         padding: 15px 25px;
@@ -82,14 +82,21 @@
 
       .instruction {
         position: fixed;
-        top: 100px;
-        width: 100%;
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 90%;
+        max-width: 600px;
         text-align: center;
         color: white;
-        font-size: 18px;
+        font-size: 16px;
+        font-weight: bold;
         text-shadow: 0 2px 4px rgba(0,0,0,0.8);
         pointer-events: none;
         z-index: 15;
+        background: rgba(0,0,0,0.3);
+        padding: 8px 16px;
+        border-radius: 20px;
       }
     </style>
   </head>
@@ -165,27 +172,33 @@
       // Configuration for trash models
       const trashConfig = {
         paper: { model: './assets/models/trash-kertas.glb', scale: '0.5 0.5 0.5' },
-        organic: { model: './assets/models/trash-organik.glb', scale: '0.5 0.5 0.5' },
+        organic: { model: './assets/models/trash-organik.glb', scale: '0.3 0.3 0.3' },
         inorganic: { model: './assets/models/trash-anorganik.glb', scale: '0.5 0.5 0.5' }
       };
 
-      // Spawn trash attached to camera
       function spawnTrash(type) {
-        // Clear existing
+        console.log('Spawning trash:', type);
         trashHolder.innerHTML = '';
         currentTrashType = type;
         
         const config = trashConfig[type];
+        if (!config) {
+          console.error('Invalid trash type:', type);
+          return;
+        }
+        
         const el = document.createElement('a-entity');
         el.setAttribute('gltf-model', config.model);
         el.setAttribute('scale', config.scale);
-        // Rotate slightly to look nice
-        el.setAttribute('rotation', '0 45 0'); 
-        // Animation for floating effect
+        el.setAttribute('rotation', '0 45 0');
         el.setAttribute('animation', 'property: position; dir: alternate; dur: 1000; easing: easeInOutSine; loop: true; to: 0 -0.45 -1');
         
         trashHolder.appendChild(el);
         instructionEl.innerText = "Now tap the matching bin!";
+        
+        setTimeout(() => {
+          console.log('Trash spawned successfully, holder has', trashHolder.children.length, 'children');
+        }, 100);
       }
 
       // Handle click on bins
