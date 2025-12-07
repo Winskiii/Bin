@@ -121,6 +121,11 @@
     </div>
 
         <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false; detectionMode: mono_and_matrix; matrixCodeType: 3x3; trackingMethod: best;" cursor="rayOrigin: mouse" raycaster="objects: .collidable">
+          <a-assets>
+        <audio id="throw-sound" src="./assets/sounds/throw.mp3" preload="auto"></audio>
+        <audio id="success-sound" src="./assets/sounds/success.mp3" preload="auto"></audio>
+        <audio id="fail-sound" src="./assets/sounds/fail.mp3" preload="auto"></audio>
+      </a-assets>
       <a-marker preset="hiro" id="hiro-marker" smooth="true" smoothCount="10" smoothTolerance="0.01" smoothThreshold="5">
         <a-entity id="bins" visible="true">
           <a-entity id="bin-paper"
@@ -184,7 +189,7 @@
         const el = document.createElement('a-entity');
         el.setAttribute('gltf-model', config.model);
         el.setAttribute('scale', config.scale);
-        el.setAttribute('rotation', '0 45 0');
+        el.setAttribute('rotation', '-90 180 0');
         el.setAttribute('animation', 'property: position; dir: alternate; dur: 1000; easing: easeInOutSine; loop: true; to: 0 -0.45 -1');
         
         trashHolder.appendChild(el);
@@ -207,7 +212,7 @@
       function throwTrashToBin(targetBinId) {
         const trashEl = trashHolder.firstElementChild;
         if (!trashEl) return;
-
+        playSound('throw-sound');
         trashHolder.innerHTML = ''; 
 
         const projectile = document.createElement('a-entity');
@@ -249,13 +254,23 @@
       function handleSuccess() {
         currentScore += 10;
         updateScore();
+        playSound('success-sound');
         showFeedback('CORRECT! +10', 'correct');
       }
 
       function handleFail() {
         currentScore -= 5;
         updateScore();
+        playSound('fail-sound');
         showFeedback('WRONG! -5', 'wrong');
+      }
+
+      function playSound(soundId) {
+        const sound = document.getElementById(soundId);
+        if (sound) {
+          sound.currentTime = 0;
+          sound.play().catch(e => console.log('Sound play failed:', e));
+        }
       }
 
       function updateScore() {
